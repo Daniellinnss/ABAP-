@@ -1,0 +1,42 @@
+*&---------------------------------------------------------------------*
+*& Report zitab_
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zitab_.
+
+TYPES: begin of ESTRUC_SFLIGHT,
+          CARRID   TYPE SFLIGHT-CARRID,
+          CONNID   TYPE SFLIGHT-CONNID,
+          FLDATE   TYPE SFLIGHT-fldate,
+          PRICE    TYPE SFLIGHT-price,
+          CURRENCY type sflight-currency,
+          SEATSOCC type sflight-seatsmax,
+          end of estruc_sflight.
+
+DATA: WA_SFFLIGHT type estruc_sflight.
+DATA: TABINT type standard table of estruc_sflight.
+
+*TELA DE SELEÇÃO
+
+parameters: P_CARRID type SFLIGHT-carrid,
+            P_CONNID type sflight-connid.
+
+SELECT CARRID CONNID FLDATE PRICE CURRENCY SEATSOCC
+INTO TABLE tabint
+    FROM sflight
+    WHERE CARRID = P_CARRID
+    AND   CONNID = P_CONNID.
+
+if SY-subrc = 0.
+
+  LOOP AT tabint INTO wa_sfflight.
+  WRITE: / wa_sfflight-carrid,
+           wa_sfflight-connid,
+           wa_sfflight-currency,
+           wa_sfflight-fldate,
+           wa_sfflight-price,
+           wa_sfflight-seatsocc.
+  endloop.
+
+endif.
