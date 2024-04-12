@@ -1,0 +1,53 @@
+*&---------------------------------------------------------------------*
+*& Report zcalc
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+report zcalc.
+
+types: TY_PORCENTAGEM type P decimals 2.
+
+
+parameters: P_VAL1 type I,
+            P_VAL2 type I,
+            P_OPER type C length 1.
+
+DATA: RESULT type ty_porcentagem.
+
+CASE p_oper.
+
+
+  WHEN '%'.
+*SUBROTINA
+   PERFORM CALC_PERC USING P_VAL1 p_val2
+                     changing RESULT.
+
+   WHEN '+'.
+   RESULT = p_val1 + p_val2.
+   WHEN '-'.
+   RESULT = p_val1 - p_val2.
+   WHEN '*'.
+   RESULT = P_VAL1 * p_val2.
+   WHEN '/'.
+   IF p_val2 IS INITIAL.
+   message 'DIVISÃO POR 0 (001)' type 'I'.
+   STOP.
+   endif.
+endcase.
+WRITE: 'O RESULTADO É:' && RESULT.
+*&---------------------------------------------------------------------*
+*& Form CALC_PERC
+*&---------------------------------------------------------------------*
+*& text
+*&---------------------------------------------------------------------*
+*&      --> P_VAL1
+*&      --> P_VAL2
+*&      <-- RESULT
+*&---------------------------------------------------------------------*
+form calc_perc  using    p_valor1  TYPE I
+                         p_valor2  TYPE I
+                changing p_resultado TYPE ty_porcentagem.
+
+  P_RESULTADO = p_valor1 / p_valor2 * 100.
+
+endform.
