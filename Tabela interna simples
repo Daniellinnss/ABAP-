@@ -1,42 +1,61 @@
 *&---------------------------------------------------------------------*
-*& Report zitab_
+*& Report ZDL_IT
 *&---------------------------------------------------------------------*
 *&
 *&---------------------------------------------------------------------*
-report zitab_.
+REPORT ZDL_IT.
 
-TYPES: begin of ESTRUC_SFLIGHT,
-          CARRID   TYPE SFLIGHT-CARRID,
-          CONNID   TYPE SFLIGHT-CONNID,
-          FLDATE   TYPE SFLIGHT-fldate,
-          PRICE    TYPE SFLIGHT-price,
-          CURRENCY type sflight-currency,
-          SEATSOCC type sflight-seatsmax,
-          end of estruc_sflight.
+PARAMETERS: p_car TYPE sflight-carrid,
+            p_con TYPE sflight-connid,
+            p_t_from TYPE sflight-fldate,
+            p_t_to TYPE sflight-fldate.
 
-DATA: WA_SFFLIGHT type estruc_sflight.
-DATA: TABINT type standard table of estruc_sflight.
+"Declaração de estrutura
+TYPES: BEGIN OF ty_sflight,
+        carrid   TYPE sflight-carrid,
+        connid   TYPE sflight-connid,
+        fldate   TYPE sflight-fldate,
+        price    TYPE sflight-price,
+        currency TYPE sflight-currency,
+        seatsocc TYPE sflight-seatsocc,
+       END OF ty_sflight.
 
-*TELA DE SELEÇÃO
+"Work area
+DATA: wa_sflight TYPE ty_sflight.
+"Tabela interna
+DATA: it_sflight TYPE TABLE OF ty_sflight.
 
-parameters: P_CARRID type SFLIGHT-carrid,
-            P_CONNID type sflight-connid.
+"Variáveis para armazenar total e contagem
+DATA: total_price TYPE sflight-price VALUE 0,
+      flight_count TYPE i VALUE 0.
 
-SELECT CARRID CONNID FLDATE PRICE CURRENCY SEATSOCC
-INTO TABLE tabint
-    FROM sflight
-    WHERE CARRID = P_CARRID
-    AND   CONNID = P_CONNID.
+"Selecionar e armazenar os registros
+SELECT carrid connid fldate price currency seatsocc
+  INTO TABLE it_sflight
+  FROM sflight
+  WHERE carrid EQ p_car
+  AND connid EQ p_con
+  AND fldate BETWEEN p_t_from AND p_t_to
+  ORDER BY fldate.
 
-if SY-subrc = 0.
+"Loop na tabela interna para transferir os registros da work area
+LOOP AT it_sflight INTO wa_sflight.
 
-  LOOP AT tabint INTO wa_sfflight.
-  WRITE: / wa_sfflight-carrid,
-           wa_sfflight-connid,
-           wa_sfflight-currency,
-           wa_sfflight-fldate,
-           wa_sfflight-price,
-           wa_sfflight-seatsocc.
-  endloop.
+  WRITE: / wa_sflight-carrid,
+           wa_sflight-connid,
+           wa_sflight-fldate,
+           wa_sflight-price,
+           wa_sflight-currency,
+           wa_sflight-seatsocc.
 
-endif.
+  "Somar o preço total
+  total_price = total_price + wa_sflight-price.
+
+  "Incrementar contagem de voos
+  flight_count = flight_count + 1.
+
+ENDLOOP.
+
+"Exibir total e contagem
+WRITE: / 'Total de Preços:', total_price,
+       / 'Número de Voos:', flight_count.
